@@ -8,12 +8,15 @@ const EventEmitter = require('events');
 const { isValidUrl } = require('./lib/validateUrl');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const DOWNLOADS_DIR = path.join(__dirname, '../downloads');
 if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL, 'http://localhost:3000']
+  : ['http://localhost:3000'];
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 const jobs = {};
