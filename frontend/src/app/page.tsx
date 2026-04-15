@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://audixa-backend-production.up.railway.app';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://audixa-backend-production-80e7.up.railway.app';
 
 interface Formats {
   mp3: string[];
