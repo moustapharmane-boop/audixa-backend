@@ -13,10 +13,17 @@ const PORT = process.env.PORT || 3001;
 const DOWNLOADS_DIR = path.join(__dirname, '../downloads');
 if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, 'http://localhost:3000']
-  : ['http://localhost:3000'];
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (
+      origin === 'http://localhost:3000' ||
+      origin.endsWith('.vercel.app') ||
+      origin === process.env.FRONTEND_URL
+    ) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  }
+}));
 app.use(express.json());
 
 const jobs = {};
