@@ -70,6 +70,7 @@ app.get('/api/formats', (req, res) => {
   proc.on('close', (code) => {
     if (responded) return;
     if (code !== 0) {
+      console.error('[yt-dlp stderr]', errOutput);
       return res.status(500).json({ error: 'Could not fetch video info. Check the URL.' });
     }
     try {
