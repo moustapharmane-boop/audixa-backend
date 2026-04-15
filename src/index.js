@@ -62,9 +62,13 @@ app.get('/api/formats', (req, res) => {
   proc.stdout.on('data', (d) => { output += d; });
   proc.stderr.on('data', (d) => { errOutput += d; });
 
-  proc.on('error', () => res.status(500).json({ error: 'yt-dlp not found. Please install it.' }));
+  let responded = false;
+  proc.on('error', () => {
+    if (!responded) { responded = true; res.status(500).json({ error: 'yt-dlp not found. Please install it.' }); }
+  });
 
   proc.on('close', (code) => {
+    if (responded) return;
     if (code !== 0) {
       return res.status(500).json({ error: 'Could not fetch video info. Check the URL.' });
     }
@@ -210,13 +214,17 @@ function startDownload(jobId) {
   proc.stdout.on('data', handleOutput);
   proc.stderr.on('data', handleOutput);
 
+  let jobErrored = false;
   proc.on('error', () => {
+    if (jobErrored) return;
+    jobErrored = true;
     job.status = 'error';
     job.error = 'yt-dlp not found. Please install it.';
     jobEvents.emit(jobId, { status: 'error', error: job.error });
   });
 
   proc.on('close', (code) => {
+    if (jobErrored) return;
     if (code === 0) {
       const files = fs.readdirSync(DOWNLOADS_DIR).filter(f => f.startsWith(jobId));
       if (files.length > 0) {
