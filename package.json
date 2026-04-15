@@ -1,0 +1,14 @@
+{
+  "name": "audixa-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run kill-ports && concurrently --kill-others-on-fail --names \"BACKEND,FRONTEND,BROWSER\" --prefix-colors \"cyan,green,yellow\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"node scripts/open-browser.js\"",
+    "start": "npm run kill-ports && concurrently --kill-others-on-fail --names \"BACKEND,FRONTEND\" --prefix-colors \"cyan,green\" \"npm run start --prefix backend\" \"npm run start --prefix frontend\"",
+    "kill-ports": "powershell.exe -Command \"@(3000,3001) | ForEach-Object { $p = (Get-NetTCPConnection -LocalPort $_ -ErrorAction SilentlyContinue).OwningProcess; if ($p) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue } }\" 2>nul || true",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
