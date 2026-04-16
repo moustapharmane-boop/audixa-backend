@@ -63,7 +63,11 @@ app.get('/api/formats', (req, res) => {
   let errOutput = '';
   const cookiesFile = '/tmp/yt-cookies.txt';
   if (process.env.COOKIES_BASE64) {
-    fs.writeFileSync(cookiesFile, Buffer.from(process.env.COOKIES_BASE64, 'base64').toString('utf8'));
+    const cookiesContent = Buffer.from(process.env.COOKIES_BASE64, 'base64').toString('utf8');
+    fs.writeFileSync(cookiesFile, cookiesContent);
+    console.log('[cookies] file written, size:', cookiesContent.length, 'first line:', cookiesContent.split('\n')[0]);
+  } else {
+    console.log('[cookies] COOKIES_BASE64 not set');
   }
   const ytdlpInfoArgs = [url, '-J', '--no-playlist'];
   if (process.env.COOKIES_BASE64) {
