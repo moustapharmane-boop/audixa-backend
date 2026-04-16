@@ -131,7 +131,7 @@ export default function Home() {
       {/* Card */}
       <div className="w-full max-w-xl bg-[#111] border border-white/10 rounded-2xl p-6 shadow-xl">
         {/* URL input + fetch button */}
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={url}
@@ -143,7 +143,7 @@ export default function Home() {
           <button
             onClick={fetchFormats}
             disabled={!url.trim() || fetchPhase === 'fetching'}
-            className="px-5 py-3 rounded-xl font-semibold text-sm bg-green-500 hover:bg-green-400 disabled:opacity-40 disabled:cursor-not-allowed text-black transition-colors whitespace-nowrap"
+            className="w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm bg-green-500 hover:bg-green-400 disabled:opacity-40 disabled:cursor-not-allowed text-black transition-colors whitespace-nowrap"
           >
             {fetchPhase === 'fetching' ? 'Loading…' : 'Fetch Qualities'}
           </button>
