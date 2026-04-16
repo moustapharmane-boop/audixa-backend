@@ -61,9 +61,13 @@ app.get('/api/formats', (req, res) => {
 
   let output = '';
   let errOutput = '';
+  const cookiesFile = '/tmp/yt-cookies.txt';
+  if (process.env.COOKIES_BASE64) {
+    fs.writeFileSync(cookiesFile, Buffer.from(process.env.COOKIES_BASE64, 'base64').toString('utf8'));
+  }
   const ytdlpInfoArgs = [url, '-J', '--no-playlist'];
   if (process.env.COOKIES_BASE64) {
-    ytdlpInfoArgs.push('--cookies', '/tmp/yt-cookies.txt');
+    ytdlpInfoArgs.push('--cookies', cookiesFile);
   }
   const proc = spawn('yt-dlp', ytdlpInfoArgs);
 
