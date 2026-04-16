@@ -69,10 +69,9 @@ app.get('/api/formats', (req, res) => {
   } else {
     console.log('[cookies] COOKIES_BASE64 not set');
   }
-  const ytdlpInfoArgs = [url, '-J', '--no-playlist', '--extractor-args', 'youtube:player_client=ios,web'];
-  if (process.env.COOKIES_BASE64) {
-    ytdlpInfoArgs.push('--cookies', cookiesFile);
-  }
+  const ytdlpInfoArgs = [url, '-J', '--no-playlist', '--extractor-args', 'youtube:player_client=tv_embedded,ios'];
+  if (process.env.PROXY_URL) ytdlpInfoArgs.push('--proxy', process.env.PROXY_URL);
+  if (process.env.COOKIES_BASE64) ytdlpInfoArgs.push('--cookies', cookiesFile);
   const proc = spawn('yt-dlp', ytdlpInfoArgs);
 
   proc.stdout.on('data', (d) => { output += d; });
@@ -208,10 +207,11 @@ function startDownload(jobId) {
   const outputTemplate = path.join(DOWNLOADS_DIR, `${jobId}.%(ext)s`);
 
   const cookiesArgs = process.env.COOKIES_BASE64 ? ['--cookies', '/tmp/yt-cookies.txt'] : [];
-  const clientArgs = ['--extractor-args', 'youtube:player_client=ios,web'];
+  const clientArgs = ['--extractor-args', 'youtube:player_client=tv_embedded,ios'];
+  const proxyArgs = process.env.PROXY_URL ? ['--proxy', process.env.PROXY_URL] : [];
   const args = job.format === 'mp3'
-    ? [job.url, '-x', '--audio-format', 'mp3', '--postprocessor-args', `ffmpeg:-b:a ${job.quality}`, '-o', outputTemplate, '--newline', '--no-playlist', ...clientArgs, ...cookiesArgs]
-    : [job.url, '-f', VIDEO_FORMAT_STRINGS[job.quality] || VIDEO_FORMAT_STRINGS['720p'], '--merge-output-format', 'mp4', '-o', outputTemplate, '--newline', '--no-playlist', ...clientArgs, ...cookiesArgs];
+    ? [job.url, '-x', '--audio-format', 'mp3', '--postprocessor-args', `ffmpeg:-b:a ${job.quality}`, '-o', outputTemplate, '--newline', '--no-playlist', ...clientArgs, ...proxyArgs, ...cookiesArgs]
+    : [job.url, '-f', VIDEO_FORMAT_STRINGS[job.quality] || VIDEO_FORMAT_STRINGS['720p'], '--merge-output-format', 'mp4', '-o', outputTemplate, '--newline', '--no-playlist', ...clientArgs, ...proxyArgs, ...cookiesArgs];
 
   job.status = 'running';
   jobEvents.emit(jobId, { status: 'running', progress: 0 });
