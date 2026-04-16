@@ -13,6 +13,10 @@ const PORT = process.env.PORT || 3001;
 const DOWNLOADS_DIR = path.join(__dirname, '../downloads');
 if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 
+if (process.env.COOKIES_BASE64) {
+  fs.writeFileSync('/tmp/yt-cookies.txt', Buffer.from(process.env.COOKIES_BASE64, 'base64').toString('utf8'));
+}
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
@@ -57,7 +61,11 @@ app.get('/api/formats', (req, res) => {
 
   let output = '';
   let errOutput = '';
-  const proc = spawn('yt-dlp', [url, '-J', '--no-playlist']);
+  const ytdlpInfoArgs = [url, '-J', '--no-playlist'];
+  if (process.env.COOKIES_BASE64) {
+    ytdlpInfoArgs.push('--cookies', '/tmp/yt-cookies.txt');
+  }
+  const proc = spawn('yt-dlp', ytdlpInfoArgs);
 
   proc.stdout.on('data', (d) => { output += d; });
   proc.stderr.on('data', (d) => { errOutput += d; });
@@ -191,9 +199,10 @@ function startDownload(jobId) {
   const job = jobs[jobId];
   const outputTemplate = path.join(DOWNLOADS_DIR, `${jobId}.%(ext)s`);
 
+  const cookiesArgs = process.env.COOKIES_BASE64 ? ['--cookies', '/tmp/yt-cookies.txt'] : [];
   const args = job.format === 'mp3'
-    ? [job.url, '-x', '--audio-format', 'mp3', '--postprocessor-args', `ffmpeg:-b:a ${job.quality}`, '-o', outputTemplate, '--newline', '--no-playlist']
-    : [job.url, '-f', VIDEO_FORMAT_STRINGS[job.quality] || VIDEO_FORMAT_STRINGS['720p'], '--merge-output-format', 'mp4', '-o', outputTemplate, '--newline', '--no-playlist'];
+    ? [job.url, '-x', '--audio-format', 'mp3', '--postprocessor-args', `ffmpeg:-b:a ${job.quality}`, '-o', outputTemplate, '--newline', '--no-playlist', ...cookiesArgs]
+    : [job.url, '-f', VIDEO_FORMAT_STRINGS[job.quality] || VIDEO_FORMAT_STRINGS['720p'], '--merge-output-format', 'mp4', '-o', outputTemplate, '--newline', '--no-playlist', ...cookiesArgs];
 
   job.status = 'running';
   jobEvents.emit(jobId, { status: 'running', progress: 0 });
